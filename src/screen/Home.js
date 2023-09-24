@@ -89,7 +89,14 @@ const Home = () => {
             }
                 
             </View>
+            <View style={{flexDirection:"row",justifyContent:"space-between"}}>  
+            {
+                chkcount > 0 ? 
+                <Text style={[styles.screen,{fontSize:30}]}>{chkcount}</Text>
+                :<Text style={[styles.screen,{fontSize:30}]}>{count}</Text>
+            }         
             <Text style={styles.screen}>{worker}</Text>
+            </View>
             <View style={styles.func}>
                 <Btn val="Check" 
                  onPress={() => check()}
