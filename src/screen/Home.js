@@ -1,43 +1,99 @@
 import { View, Text, StyleSheet, Platform, TouchableOpacity, FlatList, Dimensions } from 'react-native'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 const num = [{ "id": "7" }, { "id": "8" }, { "id": "9" }, { "id": "4" }, { "id": "5" }, { "id": "6" }, { "id": "1" }, { "id": "2" }, { "id": "3" }, { "id": "0" }, { "id": "." }]
 const art = [{ "id": "1", "key": "÷" }, { "id": "2", "key": "×" }, { "id": "3", "key": "%" }, { "id": "4", "key": "-" }, { "id": "5", "key": "+" }, { "id": "6", "key": "=" }]
 
-const Home = () => { 
+const Home = () => {
     const dwidth = ((Dimensions.get("window").width) / 100) * 10
-    const [display,setDisplay] = useState(true)
+    const [display, setDisplay] = useState(true)
+    const [chkdisplay, setChkDisplay] = useState("")
     const [value, setValue] = useState("")
-    const [worker,setWorker]= useState("")
-    const [num1,setNum1] = useState(0)
+    const [worker, setWorker] = useState("")
+    const [num1, setNum1] = useState(0)
+    const [valen, setValen] = useState([])
+    const [auto, setAuto] = useState("")
+    const [count, setCount] = useState(1);
+    const [chkcount, setChkCount] = useState(0);
+   
     let result = 0
 
+    const reset = () => {
+        setDisplay(true)
+        setNum1(0)
+        setValue("")
+        setWorker("")
+        setValen([])
+        setCount(1)
+        setChkCount(0)
+    }
+
+    const back = () => {
+        if (value.length > 0) {           
+            setValue(value.slice(0, value.length - 1))
+        }
+
+    }
+    const check = () => {
+        if(valen.length > chkcount)      
+            setChkCount(chkcount + 1)           
+    }
+
     const numpad = (data) => {
-        setDisplay(false)  
+        setDisplay(false)
         setValue(value + data)
     }
     const work = (data) => {
-        if(worker !== ""){
-            setWorker("")
-            result = num1 + parseFloat(value)          
-            setValue(result)
-            setNum1(result)            
-        }else{
-            setDisplay(true)
-            setValue("")
-            setWorker(data)
-            setNum1(parseFloat(value))
-        }            
+        if (value != NaN && value != "" && value != undefined) {
+            let val = parseFloat(value)
+            if (worker !== "") {
+                if (worker === "+") {
+                    result = num1 + val
+                } else if (worker === "-") {
+                    result = num1 - val
+                } else if (worker === "×") {
+                    result = num1 * val
+                } else if (worker === "÷") {
+                    result = num1 / val
+                } else if (worker === "%") {
+                    result = (num1 / 100) * val
+                }
+                setValue(result)
+                setNum1(result)
+                setWorker("")
+                if (val != NaN && val > 0 && val != "") {
+                    setValen([...valen, { "id": count, "key": val }])
+                    setCount(count + 1)
+                }
+            } else {
+                setDisplay(true)
+                setValue("")
+                setWorker(data)
+                setNum1(val)
+                if (num1 != value && val != NaN && val >= 0 && val != "") {
+                    setValen([...valen, { "id": count, "key": val }])
+                    setCount(count + 1)
+                }
+            }
+        }
     }
+    console.log(valen,chkcount)
     
 
     return (
         <View style={styles.container}>
             <View style={styles.screenContainer}>
-                <Text style={styles.screen}>{display === true ? 0:value}</Text>
+            {
+                chkcount > 0 ? <Text style={styles.screen}>{valen.filter(item => item.id == chkcount)[0]?.key}</Text>
+                :
+                <Text style={styles.screen}>{display === true ? 0 : value}</Text>
+            }
+                
             </View>
             <Text style={styles.screen}>{worker}</Text>
             <View style={styles.func}>
-                <Btn val="Check" style={{
+                <Btn val="Check" 
+                 onPress={() => check()}
+                style={{
                     width: dwidth * 2.8,
                     backgroundColor: "#89b4de"
                 }}
@@ -45,18 +101,22 @@ const Home = () => {
                         fontSize: 20
                     }}
                 />
-                <Btn val="Auto replay" style={{
-                    width: dwidth * 2.8,
-                    backgroundColor: "#89b4de"
-                }}
+                <Btn val="Back"
+                    onPress={() => back()}
+                    style={{
+                        width: dwidth * 2.8,
+                        backgroundColor: "#89b4de"
+                    }}
                     styletxt={{
                         fontSize: 20
                     }}
                 />
-                <Btn val="ON/AC" style={{
-                    width: dwidth * 3.73,
-                    backgroundColor: "#5edaec"
-                }}
+                <Btn val="ON/AC"
+                    onPress={() => reset()}
+                    style={{
+                        width: dwidth * 3.73,
+                        backgroundColor: "#5edaec"
+                    }}
                     styletxt={{
                         fontSize: 20
                     }}
@@ -88,12 +148,12 @@ const Home = () => {
                         keyExtractor={item => item.id}
                         renderItem={item => {
                             return (
-                                <Btn val={item.item.key} 
-                                onPress={()=>work(item.item.key)}
-                                style={{
-                                    height: item.item.id == "5" || item.item.id === "6" ? 144 : 70,
-                                    width: item.item.id === "0" ? dwidth * 3.7 : dwidth * 1.8
-                                }} />
+                                <Btn val={item.item.key}
+                                    onPress={() => work(item.item.key)}
+                                    style={{
+                                        height: item.item.id == "5" || item.item.id === "6" ? 144 : 70,
+                                        width: item.item.id === "0" ? dwidth * 3.7 : dwidth * 1.8
+                                    }} />
                             )
                         }}
                     />
@@ -132,7 +192,7 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
     screen: {
-        fontSize: Platform.OS === "ios"?58:60,
+        fontSize: Platform.OS === "ios" ? 58 : 60,
         color: "black"
     },
     btn: {
