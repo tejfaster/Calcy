@@ -1,0 +1,1 @@
+export const digital_7 = "digital-7.regular"
